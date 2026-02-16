@@ -3,16 +3,18 @@
 
   // ====== CONFIG via <script data-*> ======
   const self = document.currentScript;
-  const GA_ID = self?.dataset?.ga || "";     // es: G-XXXXXXXX
+  const GA_ID = self?.dataset?.ga || "";                 // es: G-XXXXXXXXXX
   const POLICY_URL = self?.dataset?.policy || "cookie.html";
   const PRIVACY_URL = self?.dataset?.privacy || "privacy.html";
+  const MANAGE = (self?.dataset?.manage || "").toLowerCase(); // "floating"
+  const MANAGE_TEXT = self?.dataset?.manageText || "Cookie";  // opzionale
 
   // ====== gtag stub + Consent Mode default denied ======
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
   window.gtag = window.gtag || gtag;
 
-  // Default denied (EEA safe)
+  // Default denied (EEA-friendly)
   gtag("consent", "default", {
     analytics_storage: "denied",
     ad_storage: "denied",
@@ -20,7 +22,7 @@
     ad_personalization: "denied"
   });
 
-  // Load GA script (it can run in cookieless until granted)
+  // Load GA script (can run cookieless until granted)
   if (GA_ID) {
     const s = document.createElement("script");
     s.async = true;
@@ -28,12 +30,12 @@
     document.head.appendChild(s);
   }
 
-  // ====== helpers ======
+  // ====== storage helpers ======
   const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } };
   const write = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
 
+  // ====== consent apply ======
   const apply = (c) => {
-    // analytics
     if (GA_ID) {
       if (c.analytics) {
         gtag("consent", "update", { analytics_storage: "granted" });
@@ -42,11 +44,12 @@
         gtag("consent", "update", { analytics_storage: "denied" });
       }
     }
+
     window.TMCookie = window.TMCookie || {};
     window.TMCookie.consent = c;
   };
 
-  // ====== UI ======
+  // ====== UI mount banner ======
   const mount = () => {
     if (document.getElementById("tmCookie")) return;
 
@@ -62,7 +65,7 @@
 
         <p class="tm-cookie__text">
           Usiamo cookie <b>necessari</b> per il funzionamento del sito e, solo con il tuo consenso,
-          cookie <b>statistici</b>.
+          cookie <b>statistici</b> (Google Analytics).
           <a href="${POLICY_URL}">Cookie Policy</a> · <a href="${PRIVACY_URL}">Privacy</a>
         </p>
 
@@ -125,20 +128,52 @@
     $("tmCkReject").addEventListener("click", () => setConsent(false));
     $("tmCkAccept").addEventListener("click", () => setConsent(true));
 
-    // chiudi = rifiuta analytics (comportamento safe)
+    // X = rifiuta analytics (safe)
     $("tmCkX").addEventListener("click", () => setConsent(false));
   };
 
-  // Public API: per footer "Rivedi preferenze"
+  // ====== floating manage button ======
+  const mountManageButton = () => {
+    if (MANAGE !== "floating") return;
+    if (document.getElementById("tmCookieManage")) return;
+
+    const b = document.createElement("button");
+    b.id = "tmCookieManage";
+    b.type = "button";
+    b.className = "tm-cookie-manage";
+    b.textContent = MANAGE_TEXT;
+
+    b.addEventListener("click", () => {
+      // apre direttamente preferenze
+      mount();
+      setTimeout(() => document.getElementById("tmCkPrefs")?.click(), 0);
+    });
+
+    document.body.appendChild(b);
+  };
+
+  // ====== Public API ======
   window.TMCookie = window.TMCookie || {};
   window.TMCookie.open = () => mount();
+  window.TMCookie.openPrefs = () => {
+    mount();
+    setTimeout(() => document.getElementById("tmCkPrefs")?.click(), 0);
+  };
+  window.TMCookie.reset = () => {
+    localStorage.removeItem(KEY);
+    // opzionale: ricarica per far riapparire banner
+    // location.reload();
+  };
 
-  // Init
+  // ====== Init ======
   const existing = read();
   if (existing) apply(existing);
-  else {
-    // aspetta DOM pronto
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
-    else mount();
-  }
+
+  const start = () => {
+    mountManageButton();
+    if (!existing) mount();
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();
