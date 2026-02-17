@@ -262,3 +262,57 @@
   .tm-cookie-info{ right: 16px; left: 16px; width: auto; }
   .tm-v{ max-width: 55%; }
 }
+
+/* Phone safe-area */
+.tm-cookie-banner{
+  bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+/* Mobile layout: testo sopra, bottoni sotto */
+@media (max-width: 560px){
+  .tm-cookie-banner__inner{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .tm-cookie-banner__left{
+    width: 100%;
+  }
+
+  .tm-cookie-banner__desc{
+    /* evita “parole a colonna” */
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Bottoni in griglia 2+1 (o 1 col se troppo stretto) */
+  .tm-cookie-banner__actions{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* “Accetta” full width sotto */
+  .tm-cookie-banner__actions .tm-btn--solid{
+    grid-column: 1 / -1;
+  }
+
+  /* Bottoni non enormi */
+  .tm-btn{
+    width: 100%;
+    padding: .62rem .85rem;
+  }
+}
+
+/* Se lo schermo è piccolissimo: tutto in colonna */
+@media (max-width: 360px){
+  .tm-cookie-banner__actions{
+    grid-template-columns: 1fr;
+  }
+  .tm-cookie-banner__actions .tm-btn--solid{
+    grid-column: auto;
+  }
+}
