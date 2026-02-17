@@ -250,6 +250,16 @@
     rgba(18,18,18,.90);
 }
 
+.tm-cookie-manage{
+  bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+/* quando banner aperto: alza l’icona sopra il banner */
+html.tm-banner-open .tm-cookie-manage{
+  bottom: calc(16px + env(safe-area-inset-bottom) + 110px);
+}
+
+
 .tm-pos-bl{ left: 16px; }
 .tm-pos-br{ right: 16px; }
 
