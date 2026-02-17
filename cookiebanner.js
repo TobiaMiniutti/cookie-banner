@@ -80,7 +80,10 @@
     setTimeout(() => el.remove(), 220);
   };
 
-  const closeBanner = () => animateOutRemove("tmCookieBanner");
+  const closeBanner = () => {
+    document.documentElement.classList.remove("tm-banner-open");
+    animateOutRemove("tmCookieBanner");
+  };
   const closePrefs = () => animateOutRemove("tmCookiePrefs");
   const closeInfo  = () => animateOutRemove("tmCookieInfo");
 
@@ -305,6 +308,7 @@
     `;
     b.addEventListener("click", openInfo);
     document.body.appendChild(b);
+    document.documentElement.classList.add("tm-banner-open");
   };
 
   // ====== Public API ======
